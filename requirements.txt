@@ -1,0 +1,16 @@
+torchvision
+# cffi
+# tensorboardX==1.6
+numpy
+pandas
+Pillow
+matplotlib
+scikit-image==0.15.0
+
+# tqdm==4.32.2
+# scipy==1.0.0
+# scikit-image==0.15.0
+# colorama==0.3.7
+# setproctitle
+# pytz
+# ipython==7.5.0
