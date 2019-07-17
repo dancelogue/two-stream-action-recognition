@@ -105,7 +105,7 @@ class ResNet(nn.Module):
     def __init__(self, block, layers, nb_classes=101, channel=20):
         self.inplanes = 64
         super(ResNet, self).__init__()
-        self.conv1_custom = nn.Conv2d(channel, 64, kernel_size=7, stride=2, padding=3,   
+        self.conv1_custom = nn.Conv2d(channel, 64, kernel_size=7, stride=2, padding=3,
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
@@ -217,19 +217,16 @@ def cross_modality_pretrain(conv1_weight, channel):
     # transform the original 3 channel weight to "channel" channel
     S=0
     for i in range(3):
-        S += conv1_weight[:,i,:,:]
+        S += conv1_weight[:, i, :, :]
     avg = S/3.
-    new_conv1_weight = torch.FloatTensor(64,channel,7,7)
-    #print type(avg),type(new_conv1_weight)
+    new_conv1_weight = torch.FloatTensor(64, channel, 7, 7)
     for i in range(channel):
         new_conv1_weight[:,i,:,:] = avg.data
     return new_conv1_weight
 
 def weight_transform(model_dict, pretrain_dict, channel):
     weight_dict  = {k:v for k, v in pretrain_dict.items() if k in model_dict}
-    #print pretrain_dict.keys()
     w3 = pretrain_dict['conv1.weight']
-    #print type(w3)
     if channel == 3:
         wt = w3
     else:
@@ -242,5 +239,4 @@ def weight_transform(model_dict, pretrain_dict, channel):
 #Test network
 if __name__ == '__main__':
     model = resnet34(pretrained= True, channel=10)
-    print model
-     
+    print(model)
