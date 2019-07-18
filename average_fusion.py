@@ -7,26 +7,32 @@ import dataloader
 
 if __name__ == '__main__':
 
-    rgb_preds='record/spatial/spatial_video_preds.pickle'
+    rgb_preds = 'record/spatial/spatial_video_preds.pickle'
     opf_preds = 'record/motion/motion_video_preds.pickle'
 
-    with open(rgb_preds,'rb') as f:
+    with open(rgb_preds, 'rb') as f:
         rgb =pickle.load(f)
     f.close()
-    with open(opf_preds,'rb') as f:
+
+    with open(opf_preds, 'rb') as f:
         opf =pickle.load(f)
     f.close()
 
-    dataloader = dataloader.spatial_dataloader(BATCH_SIZE=1, num_workers=1,
-                                    path='/home/ubuntu/data/UCF101/spatial_no_sampled/',
-                                    ucf_list='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/github/UCF_list/',
-                                    ucf_split='01')
-    train_loader,val_loader,test_video = dataloader.run()
+    dataloader = dataloader.spatial_dataloader(
+        BATCH_SIZE=1,
+        num_workers=1,
+        path='/home/ubuntu/data/UCF101/spatial_no_sampled/',
+        ucf_list='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/github/UCF_list/',
+        ucf_split='01'
+    )
 
-    video_level_preds = np.zeros((len(rgb.keys()),101))
+    train_loader, val_loader, test_video = dataloader.run()
+
+    video_level_preds = np.zeros((len(rgb.keys()), 101))
     video_level_labels = np.zeros(len(rgb.keys()))
-    correct=0
-    ii=0
+    correct = 0
+    ii = 0
+
     for name in sorted(rgb.keys()):
         r = rgb[name]
         o = opf[name]

@@ -38,13 +38,13 @@ def main():
 
     #Prepare DataLoader
     data_loader = dataloader.Motion_DataLoader(
-                        BATCH_SIZE=arg.batch_size,
-                        num_workers=8,
-                        path='/home/ubuntu/data/UCF101/tvl1_flow/',
-                        ucf_list='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/github/UCF_list/',
-                        ucf_split='01',
-                        in_channel=10,
-                        )
+        BATCH_SIZE=arg.batch_size,
+        num_workers=8,
+        path='/home/ubuntu/data/UCF101/tvl1_flow/',
+        ucf_list='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/github/UCF_list/',
+        ucf_split='01',
+        in_channel=10,
+    )
 
     train_loader,test_loader, test_video = data_loader.run()
     #Model
@@ -240,13 +240,13 @@ class Motion_CNN():
             name = key.split('-',1)[0]
 
             preds = self.dic_video_level_preds[name]
-            label = int(self.test_video[name])-1
+            label = int(self.test_video[name]) - 1
 
-            video_level_preds[ii,:] = preds
+            video_level_preds[ii, :] = preds
             video_level_labels[ii] = label
-            ii+=1
+            ii += 1
             if np.argmax(preds) == (label):
-                correct+=1
+                correct += 1
 
         #top1 top5
         video_level_labels = torch.from_numpy(video_level_labels).long()
