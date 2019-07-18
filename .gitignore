@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# General
+.DS_Store
+
 # App
 models/*
 !models/.gitkeep
