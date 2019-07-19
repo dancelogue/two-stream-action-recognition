@@ -29,35 +29,39 @@ parser.add_argument('--lr', default=5e-4, type=float, metavar='LR', help='initia
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluate model on validation set')
 parser.add_argument('--resume', default='', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
+parser.add_argument('--ucf-list', default='', type=str, metavar='N', help='the path to the ucf list')
+parser.add_argument('--ucf-path', default='', type=str, metavar='PATH', help='the path to the ucf data list')
 
 def main():
     global arg
     arg = parser.parse_args()
     print(arg)
 
-    #Prepare DataLoader
+    # Prepare DataLoader
     data_loader = dataloader.spatial_dataloader(
-                        BATCH_SIZE=arg.batch_size,
-                        num_workers=8,
-                        path='/home/ubuntu/data/UCF101/spatial_no_sampled/',
-                        ucf_list ='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/github/UCF_list/',
-                        ucf_split ='01',
-                        )
+        BATCH_SIZE=arg.batch_size,
+        num_workers=8,
+        path=arg.ucf_path,
+        ucf_list=arg.ucf_list,
+        ucf_split='01',
+    )
 
     train_loader, test_loader, test_video = data_loader.run()
+
     #Model
     model = Spatial_CNN(
-                        nb_epochs=arg.epochs,
-                        lr=arg.lr,
-                        batch_size=arg.batch_size,
-                        resume=arg.resume,
-                        start_epoch=arg.start_epoch,
-                        evaluate=arg.evaluate,
-                        train_loader=train_loader,
-                        test_loader=test_loader,
-                        test_video=test_video
+        nb_epochs=arg.epochs,
+        lr=arg.lr,
+        batch_size=arg.batch_size,
+        resume=arg.resume,
+        start_epoch=arg.start_epoch,
+        evaluate=arg.evaluate,
+        train_loader=train_loader,
+        test_loader=test_loader,
+        test_video=test_video
     )
-    #Training
+
+    # Training
     model.run()
 
 class Spatial_CNN():

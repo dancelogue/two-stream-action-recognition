@@ -75,7 +75,7 @@ class spatial_dataloader():
         self.data_path=path
         self.frame_count ={}
         # split the training and testing videos
-        splitter = UCF101_splitter(path=ucf_list,split=ucf_split)
+        splitter = UCF101_splitter(path=ucf_list, split=ucf_split)
         self.train_video, self.test_video = splitter.split_video()
 
     def load_frame_count(self):
