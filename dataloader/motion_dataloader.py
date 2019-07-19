@@ -15,7 +15,7 @@ import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from split_train_test_video import *
+from .split_train_test_video import *
 
 class motion_dataset(Dataset):
     def __init__(self, dic, in_channel, root_dir, mode, transform=None):
