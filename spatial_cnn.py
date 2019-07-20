@@ -29,8 +29,8 @@ parser.add_argument('--lr', default=5e-4, type=float, metavar='LR', help='initia
 parser.add_argument('--evaluate', dest='evaluate', action='store_true', help='evaluate model on validation set')
 parser.add_argument('--resume', default='', type=str, metavar='PATH', help='path to latest checkpoint (default: none)')
 parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='manual epoch number (useful on restarts)')
-parser.add_argument('--ucf-list', default='', type=str, metavar='N', help='the path to the ucf list')
-parser.add_argument('--ucf-path', default='', type=str, metavar='PATH', help='the path to the ucf data list')
+parser.add_argument('--ucf-list', default='', type=str, metavar='N', help='the path to the ucf list', required=True)
+parser.add_argument('--ucf-path', default='', type=str, metavar='PATH', help='the path to the ucf data list', required=True)
 
 def main():
     global arg
