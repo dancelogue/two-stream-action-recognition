@@ -1,4 +1,6 @@
 import pickle
+from pathlib import Path
+
 from PIL import Image
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
@@ -18,15 +20,33 @@ class spatial_dataset(Dataset):
     def __len__(self):
         return len(self.keys)
 
-    def load_ucf_image(self, video_name, index):
+    def ucf_image_path(self, video_name, index):
         if video_name.split('_')[0] == 'HandstandPushups':
             n, g = video_name.split('_', 1)
             name = 'HandStandPushups_' + g
-            path = self.root_dir + 'HandstandPushups'+'/separated_images/v_' + name + '/v_' + name + '_'
+            path = self.root_dir + 'HandstandPushups' + '/frame000'
         else:
-            path = self.root_dir + video_name.split('_')[0] + '/separated_images/v_' + video_name + '/v_' + video_name + '_'
+            path = self.root_dir + 'v_' + video_name + '/frame000'
 
-        img = Image.open(path + str(index) + '.jpg')
+        str_index = str(index) if index > 100 else "0%s" % index if index > 10 else "00%s" % index
+        path = path + str_index + '.jpg'
+
+        if Path(path).exists():
+            return path
+        print('Path does not exist')
+        return False
+
+    def load_ucf_image(self, path):
+        # if video_name.split('_')[0] == 'HandstandPushups':
+        #     n, g = video_name.split('_', 1)
+        #     name = 'HandStandPushups_' + g
+        #     path = self.root_dir + 'HandstandPushups' +'/separated_images/v_' + name + '/v_' + name + '_'
+        # else:
+        #     path = self.root_dir + video_name.split('_')[0] + '/separated_images/v_' + video_name + '/v_' + video_name + '_'
+
+        # img = Image.open(path + str(index) + '.jpg')
+
+        img = Image.open(path)
         transformed_img = self.transform(img)
         img.close()
 
@@ -41,9 +61,15 @@ class spatial_dataset(Dataset):
             nb_clips = int(nb_clips)
 
             clips = []
-            clips.append(random.randint(1, nb_clips / 3))
-            clips.append(random.randint(nb_clips / 3, nb_clips * 2 / 3))
-            clips.append(random.randint(nb_clips * 2 / 3, nb_clips + 1))
+            print(nb_clips / 3)
+            print(random.randint(1, int(nb_clips / 3)))
+
+            nb_3 = int(nb_clips / 3)
+            nb_2_3 = int(nb_clips * 2 / 3)
+
+            clips.append(random.randint(1, nb_3))
+            clips.append(random.randint(nb_3, nb_2_3))
+            clips.append(random.randint(nb_2_3, nb_clips + 1))
 
         elif self.mode == 'val':
             video_name, index = keys_list[idx].split(' ')
@@ -59,12 +85,17 @@ class spatial_dataset(Dataset):
             for i in range(len(clips)):
                 key = 'img' + str(i)
                 index = clips[i]
-                data[key] = self.load_ucf_image(video_name, index)
+                path = self.ucf_image_path(video_name, index)
+                if not path:
+                    continue
+
+                data[key] = self.load_ucf_image(path)
 
             sample = (data, label)
 
         elif self.mode == 'val':
-            data = self.load_ucf_image(video_name, index)
+            path = self.ucf_image_path(video_name, index)
+            data = self.load_ucf_image(path)
             sample = (video_name, data, label)
         else:
             raise ValueError('There are only train and val mode')
