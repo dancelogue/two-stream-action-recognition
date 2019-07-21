@@ -1,0 +1,8 @@
+**/.git
+**/.DS_Store
+
+models/
+!models/.gitkeep
+
+datasets/
+!datasets/.gitkeep
