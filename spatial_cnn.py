@@ -183,8 +183,8 @@ class Spatial_CNN():
 
             
             losses.update(loss.data, data.size(0))
-            top1.update(prec1[0], data.size(0))
-            top5.update(prec5[0], data.size(0))
+            top1.update(prec1, data.size(0))
+            top5.update(prec5, data.size(0))
 
             # compute gradient and do SGD step
             self.optimizer.zero_grad()
@@ -239,10 +239,10 @@ class Spatial_CNN():
 
         video_top1, video_top5, video_loss = self.frame2_video_level_accuracy()
 
-
+        print(video_loss)
         info = {'Epoch':[self.epoch],
                 'Batch Time':[round(batch_time.avg,3)],
-                'Loss':[round(video_loss,5)],
+                # 'Loss':[round(video_loss,5)],
                 'Prec@1':[round(video_top1,3)],
                 'Prec@5':[round(video_top5,3)]}
         record_info(info, 'record/spatial/rgb_test.csv','test')
@@ -276,7 +276,7 @@ class Spatial_CNN():
         top5 = float(top5.numpy())
 
         #print(' * Video level Prec@1 {top1:.3f}, Video level Prec@5 {top5:.3f}'.format(top1=top1, top5=top5))
-        return top1,top5,loss.data.cpu().numpy()
+        return top1, top5, loss.data.cpu().numpy()
 
 
 if __name__=='__main__':

@@ -66,13 +66,19 @@ def record_info(info,filename,mode):
     if mode =='train':
 
         result = (
-              'Time {batch_time} '
-              'Data {data_time} \n'
-              'Loss {loss} '
-              'Prec@1 {top1} '
-              'Prec@5 {top5}\n'
-              'LR {lr}\n'.format(batch_time=info['Batch Time'],
-               data_time=info['Data Time'], loss=info['Loss'], top1=info['Prec@1'], top5=info['Prec@5'],lr=info['lr']))
+            'Time {batch_time} '
+            'Data {data_time} \n'
+            'Loss {loss} '
+            'Prec@1 {top1} '
+            'Prec@5 {top5}\n'
+            'LR {lr}\n'.format(
+                batch_time=info.get('Batch Time'),
+                data_time=info.get('Data Time'),
+                loss=info.get('Loss'),
+                top1=info.get('Prec@1'),
+                top5=info.get('Prec@5'),
+                lr=info.get('lr'))
+            )
         print(result)
 
         df = pd.DataFrame.from_dict(info)
@@ -80,11 +86,16 @@ def record_info(info,filename,mode):
 
     if mode =='test':
         result = (
-              'Time {batch_time} \n'
-              'Loss {loss} '
-              'Prec@1 {top1} '
-              'Prec@5 {top5} \n'.format( batch_time=info['Batch Time'],
-               loss=info['Loss'], top1=info['Prec@1'], top5=info['Prec@5']))
+            'Time {batch_time} \n'
+            'Loss {loss} '
+            'Prec@1 {top1} '
+            'Prec@5 {top5} \n'.format(
+                batch_time=info.get('Batch Time'),
+                loss=info.get('Loss'),
+                top1=info.get('Prec@1'),
+                top5=info.get('Prec@5')
+            )
+        )
         print(result)
         df = pd.DataFrame.from_dict(info)
         column_names = ['Epoch','Batch Time','Loss','Prec@1','Prec@5']

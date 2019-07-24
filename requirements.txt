@@ -1,16 +1,9 @@
-torchvision==0.2.0
-# cffi
-# tensorboardX==1.6
-numpy
-pandas
-Pillow
-matplotlib
+torch==1.1.0
+torchvision==0.3.0
+numpy==1.16.4
+pandas==0.24.2
+Pillow==6.1.0
+matplotlib==3.0.3
 scikit-image==0.15.0
 tqdm==4.32.2
-
-# scipy==1.0.0
-# scikit-image==0.15.0
-# colorama==0.3.7
-# setproctitle
-# pytz
-# ipython==7.5.0
+ipdb==0.12

@@ -11,3 +11,4 @@ RUN pip3 install --upgrade pip
 RUN pip install http://download.pytorch.org/whl/cu80/torch-0.4.0-cp35-cp35m-linux_x86_64.whl
 ADD requirements.txt /
 RUN pip install -r /requirements.txt
+RUN pip install --extra-index-url https://developer.download.nvidia.com/compute/redist/cuda/9.0 nvidia-dali
