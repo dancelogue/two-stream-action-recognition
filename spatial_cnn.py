@@ -32,6 +32,7 @@ parser.add_argument('--start-epoch', default=0, type=int, metavar='N', help='man
 parser.add_argument('--ucf-list', default='', type=str, metavar='N', help='the path to the ucf list', required=True)
 parser.add_argument('--ucf-path', default='', type=str, metavar='PATH', help='the path to the ucf data list', required=True)
 
+
 def main():
     global arg
     arg = parser.parse_args()
@@ -64,27 +65,43 @@ def main():
     # Training
     model.run()
 
+
 class Spatial_CNN():
     def __init__(self, nb_epochs, lr, batch_size, resume, start_epoch, evaluate, train_loader, test_loader, test_video):
-        self.nb_epochs=nb_epochs
-        self.lr=lr
-        self.batch_size=batch_size
-        self.resume=resume
-        self.start_epoch=start_epoch
-        self.evaluate=evaluate
-        self.train_loader=train_loader
-        self.test_loader=test_loader
-        self.best_prec1=0
-        self.test_video=test_video
+        self.nb_epochs = nb_epochs
+        self.lr = lr
+        self.batch_size = batch_size
+        self.resume = resume
+        self.start_epoch = start_epoch
+        self.evaluate = evaluate
+        self.train_loader = train_loader
+        self.test_loader = test_loader
+        self.best_prec1 = 0
+        self.test_video = test_video
 
     def build_model(self):
         print('==> Build model and setup loss and optimizer')
         #build model
-        self.model = resnet101(pretrained= True, channel=3).cuda()
+        self.model = resnet101(
+            pretrained=True,
+            channel=3
+        ).cuda()
+
         #Loss function and optimizer
         self.criterion = nn.CrossEntropyLoss().cuda()
-        self.optimizer = torch.optim.SGD(self.model.parameters(), self.lr, momentum=0.9)
-        self.scheduler = ReduceLROnPlateau(self.optimizer, 'min', patience=1,verbose=True)
+
+        self.optimizer = torch.optim.SGD(
+            self.model.parameters(),
+            self.lr,
+            momentum=0.9
+        )
+
+        self.scheduler = ReduceLROnPlateau(
+            self.optimizer,
+            'min',
+            patience=1,
+            verbose=True
+        )
 
     def resume_and_evaluate(self):
         if self.resume:
@@ -99,6 +116,7 @@ class Spatial_CNN():
                   .format(self.resume, checkpoint['epoch'], self.best_prec1))
             else:
                 print("==> no checkpoint found at '{}'".format(self.resume))
+
         if self.evaluate:
             self.epoch = 0
             prec1, val_loss = self.validate_1epoch()
@@ -136,14 +154,14 @@ class Spatial_CNN():
         losses = AverageMeter()
         top1 = AverageMeter()
         top5 = AverageMeter()
+
         #switch to train mode
         self.model.train()
         end = time.time()
+
         # mini-batch training
         progress = tqdm(self.train_loader)
-        for i, (data_dict,label) in enumerate(progress):
-
-
+        for i, (data_dict, label) in enumerate(progress):
             # measure data loading time
             data_time.update(time.time() - end)
 
@@ -151,9 +169,9 @@ class Spatial_CNN():
             target_var = Variable(label).cuda()
 
             # compute output
-            output = Variable(torch.zeros(len(data_dict['img1']),101).float()).cuda()
+            output = Variable(torch.zeros(len(data_dict['img1']), 101).float()).cuda()
             for i in range(len(data_dict)):
-                key = 'img'+str(i)
+                key = 'img' + str(i)
                 data = data_dict[key]
                 input_var = Variable(data).cuda()
                 output += self.model(input_var)
@@ -162,7 +180,9 @@ class Spatial_CNN():
 
             # measure accuracy and record loss
             prec1, prec5 = accuracy(output.data, label, topk=(1, 5))
-            losses.update(loss.data[0], data.size(0))
+
+            
+            losses.update(loss.data, data.size(0))
             top1.update(prec1[0], data.size(0))
             top5.update(prec5[0], data.size(0))
 
@@ -257,11 +277,6 @@ class Spatial_CNN():
 
         #print(' * Video level Prec@1 {top1:.3f}, Video level Prec@5 {top5:.3f}'.format(top1=top1, top5=top5))
         return top1,top5,loss.data.cpu().numpy()
-
-
-
-
-
 
 
 if __name__=='__main__':

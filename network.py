@@ -213,6 +213,7 @@ def resnet152(pretrained=False, **kwargs):
         model.load_state_dict(model_zoo.load_url(model_urls['resnet152']))
     return model
 
+
 def cross_modality_pretrain(conv1_weight, channel):
     # transform the original 3 channel weight to "channel" channel
     S=0
@@ -223,6 +224,7 @@ def cross_modality_pretrain(conv1_weight, channel):
     for i in range(channel):
         new_conv1_weight[:,i,:,:] = avg.data
     return new_conv1_weight
+
 
 def weight_transform(model_dict, pretrain_dict, channel):
     weight_dict  = {k:v for k, v in pretrain_dict.items() if k in model_dict}

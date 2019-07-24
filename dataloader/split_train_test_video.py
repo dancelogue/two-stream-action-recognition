@@ -1,10 +1,12 @@
 import os, pickle
+from pathlib import Path
 
 
 class UCF101_splitter():
-    def __init__(self, path, split):
+    def __init__(self, path, split, dataset_path):
         self.path = path
         self.split = split
+        self.dataset_path = dataset_path
 
     def get_action_index(self):
         self.action_label = {}
@@ -52,7 +54,10 @@ class UCF101_splitter():
             key = video.split('_', 1)[1].split('.', 1)[0]
 
             label = self.action_label[line.split('/')[0]]
-            dic[key] = int(label)
+            path = Path(self.dataset_path) / "v_{}".format(key)
+
+            if path.exists():
+                dic[key] = int(label)
         return dic
 
     def name_HandstandPushups(self, dic):

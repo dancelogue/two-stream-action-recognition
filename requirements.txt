@@ -1,4 +1,4 @@
-torchvision
+torchvision==0.2.0
 # cffi
 # tensorboardX==1.6
 numpy

@@ -44,8 +44,15 @@ class AverageMeter(object):
         self.count = 0
 
     def update(self, val, n=1):
-        self.val = val
-        self.sum += val * n
+        # print(n)
+        # try:
+        #     float(val) * n
+        # except:
+        #     n_temp = n
+        #     import ipdb; ipdb.set_trace()
+
+        self.val = float(val)
+        self.sum += float(val) * n
         self.count += n
         self.avg = self.sum / self.count
 

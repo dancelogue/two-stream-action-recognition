@@ -8,6 +8,7 @@ import random
 from .split_train_test_video import UCF101_splitter
 from skimage import io, color, exposure
 
+
 class spatial_dataset(Dataset):
     def __init__(self, dic, root_dir, mode, transform=None):
 
@@ -28,12 +29,13 @@ class spatial_dataset(Dataset):
         else:
             path = self.root_dir + 'v_' + video_name + '/frame000'
 
-        str_index = str(index) if index > 100 else "0%s" % index if index > 10 else "00%s" % index
+        str_index = str(index) if index >= 100 else "0%s" % index if index >= 10 else "00%s" % index
         path = path + str_index + '.jpg'
 
         if Path(path).exists():
             return path
-        print('Path does not exist')
+
+        print('Path does not exist', str(path))
         return False
 
     def load_ucf_image(self, path):
@@ -61,9 +63,6 @@ class spatial_dataset(Dataset):
             nb_clips = int(nb_clips)
 
             clips = []
-            print(nb_clips / 3)
-            print(random.randint(1, int(nb_clips / 3)))
-
             nb_3 = int(nb_clips / 3)
             nb_2_3 = int(nb_clips * 2 / 3)
 
@@ -114,7 +113,8 @@ class spatial_dataloader():
         # split the training and testing videos
         splitter = UCF101_splitter(
             path=ucf_list,
-            split=ucf_split
+            split=ucf_split,
+            dataset_path=path
         )
         self.train_video, self.test_video = splitter.split_video()
 
@@ -170,7 +170,9 @@ class spatial_dataloader():
                     mean=[0.485, 0.456, 0.406],
                     std=[0.229, 0.224, 0.225]
                 )
-            ]))
+            ])
+        )
+
         print('==> Training data :', len(training_set), 'frames')
         print(training_set[1][0]['img1'].size())
 
@@ -180,6 +182,7 @@ class spatial_dataloader():
             shuffle=True,
             num_workers=self.num_workers
         )
+
         return train_loader
 
     def validate(self):
@@ -191,7 +194,8 @@ class spatial_dataloader():
                 transforms.Scale([224, 224]),
                 transforms.ToTensor(),
                 transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
-        ]))
+            ])
+        )
 
         print('==> Validation data :',len(validation_set),'frames')
         print(validation_set[1][1].size())
@@ -200,7 +204,9 @@ class spatial_dataloader():
             dataset=validation_set,
             batch_size=self.BATCH_SIZE,
             shuffle=False,
-            num_workers=self.num_workers)
+            num_workers=self.num_workers
+        )
+
         return val_loader
 
 
