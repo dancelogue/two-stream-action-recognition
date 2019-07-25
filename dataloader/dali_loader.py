@@ -40,7 +40,7 @@ class VideoReaderPipeline(Pipeline):
         output = self.reader(name='Reader')
         output = self.crop(output)
         # output = self.flip(output)
-        # output = self.normalize(output)
+        output = self.normalize(output)
         return output
 
 
