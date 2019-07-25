@@ -136,16 +136,21 @@ class Spatial_CNN():
             # save model
             if is_best:
                 self.best_prec1 = prec1
-                with open('record/spatial/spatial_video_preds.pickle','wb') as f:
-                    pickle.dump(self.dic_video_level_preds,f)
+                with open('record/spatial/spatial_video_preds.pickle', 'wb') as f:
+                    pickle.dump(self.dic_video_level_preds, f)
                 f.close()
 
-            save_checkpoint({
-                'epoch': self.epoch,
-                'state_dict': self.model.state_dict(),
-                'best_prec1': self.best_prec1,
-                'optimizer' : self.optimizer.state_dict()
-            },is_best,'record/spatial/checkpoint.pth.tar','record/spatial/model_best.pth.tar')
+            save_checkpoint(
+                {
+                    'epoch': self.epoch,
+                    'state_dict': self.model.state_dict(),
+                    'best_prec1': self.best_prec1,
+                    'optimizer': self.optimizer.state_dict()
+                },
+                is_best,
+                'record/spatial/checkpoint.pth.tar',
+                'record/spatial/model_best.pth.tar'
+            )
 
     def train_1epoch(self):
         print('==> Epoch:[{0}/{1}][training stage]'.format(self.epoch, self.nb_epochs))
@@ -181,7 +186,7 @@ class Spatial_CNN():
             # measure accuracy and record loss
             prec1, prec5 = accuracy(output.data, label, topk=(1, 5))
 
-            
+
             losses.update(loss.data, data.size(0))
             top1.update(prec1, data.size(0))
             top5.update(prec5, data.size(0))
