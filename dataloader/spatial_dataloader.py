@@ -1,11 +1,17 @@
+# Python
 import pickle
 from pathlib import Path
+import random
 
-from PIL import Image
+# App
+from .split_train_test_video import UCF101_splitter
+
+# Pytorch
 from torch.utils.data import Dataset, DataLoader
 import torchvision.transforms as transforms
-import random
-from .split_train_test_video import UCF101_splitter
+
+# Third Party
+from PIL import Image
 from skimage import io, color, exposure
 
 
@@ -37,6 +43,7 @@ class spatial_dataset(Dataset):
 
         print('Path does not exist', str(path))
         return False
+
 
     def load_ucf_image(self, path):
         # if video_name.split('_')[0] == 'HandstandPushups':
@@ -197,7 +204,7 @@ class spatial_dataloader():
             ])
         )
 
-        print('==> Validation data :',len(validation_set),'frames')
+        print('==> Validation data :', len(validation_set), 'frames')
         print(validation_set[1][1].size())
 
         val_loader = DataLoader(
