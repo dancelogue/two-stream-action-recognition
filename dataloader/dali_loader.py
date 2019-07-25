@@ -31,7 +31,9 @@ class VideoReaderPipeline(Pipeline):
         self.normalize = ops.NormalizePermute(
             device="gpu",
             mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225]
+            std=[0.229, 0.224, 0.225],
+            width=224,
+            height=224
         )
 
     def define_graph(self):
