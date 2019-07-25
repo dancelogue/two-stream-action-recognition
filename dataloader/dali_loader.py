@@ -25,13 +25,20 @@ class VideoReaderPipeline(Pipeline):
             dtype=types.UINT8,
             initial_fill=16
         )
-        self.transforms = transforms
+
+        self.crop = ops.Crop(device="gpu", crop=crop_size, output_dtype=types.FLOAT)
+        self.flip = ops.Flip(device="gpu", horizontal=1, vertical=0)
+        self.normalize = ops.NormalizePermute(
+            device="gpu",
+            mean=[0.485, 0.456, 0.406],
+            std=[0.229, 0.224, 0.225]
+        )
 
     def define_graph(self):
         output = self.reader(name='Reader')
-
-        if self.transforms:
-            output = self.transforms(output)
+        output = self.crop(output)
+        output = self.flip(output)
+        output = self.normalize(output)
         return output
 
 
@@ -70,7 +77,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', default=5, type=int, metavar='N', help='the batch size')
     parser.add_argument('--root-path', default='', type=str, metavar='PATH', help='file root', required=True)
     parser.add_argument('--sequence-length', default=1, type=int, metavar='N', help='the sequence length')
-    parser.add_argument('--crop-size', default=5, type=int, metavar='N', help='the crop size')
+    parser.add_argument('--crop-size', default=224, type=int, metavar='N', help='the crop size')
 
     arg = parser.parse_args()
 
@@ -83,18 +90,9 @@ if __name__ == '__main__':
         batch_size,
         file_root,
         sequence_length,
-        crop_size,
-        transforms=transforms.Compose([
-            transforms.RandomCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225]
-            )
-        ])
+        crop_size
     )
 
     for i, inputs in enumerate(loader):
         inputs = inputs[0]["data"]
-        print(i, ' -- ', inputs.shape) 
+        print(i, ' -- ', inputs.shape)
