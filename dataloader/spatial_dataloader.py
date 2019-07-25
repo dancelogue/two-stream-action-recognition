@@ -4,7 +4,10 @@ from pathlib import Path
 import random
 
 # App
-from .split_train_test_video import UCF101_splitter
+try:
+    from .split_train_test_video import UCF101_splitter
+except Exception: #ImportError
+    from split_train_test_video import UCF101_splitter
 
 # Pytorch
 from torch.utils.data import Dataset, DataLoader
@@ -221,8 +224,14 @@ if __name__ == '__main__':
     dataloader = spatial_dataloader(
         BATCH_SIZE=1,
         num_workers=1,
-        path='/home/ubuntu/data/UCF101/spatial_no_sampled/',
-        ucf_list='/home/ubuntu/cvlab/pytorch/ucf101_two_stream/github/UCF_list/',
+        path='/UCF101/jpegs/jpegs_256/',
+        ucf_list='/two-stream-action-recognition/UCF_list/',
         ucf_split='01'
     )
     train_loader, val_loader, test_video = dataloader.run()
+    print(len(train_loader))
+
+    for i, item in enumerate(train_loader):
+        for img in item:
+            print(img['img1'].shape )
+        # print(i, '--', item.shape)
