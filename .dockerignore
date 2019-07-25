@@ -6,3 +6,5 @@ models/
 
 datasets/
 !datasets/.gitkeep
+
+record/
