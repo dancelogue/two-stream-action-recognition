@@ -4,6 +4,7 @@ import argparse
 # Third Party
 import numpy as numpy
 import torchvision.transforms as transforms
+import torch
 
 # NVIDIA
 from nvidia.dali.pipeline import Pipeline
@@ -27,21 +28,34 @@ class VideoReaderPipeline(Pipeline):
         )
 
         self.crop = ops.Crop(device="gpu", crop=crop_size, output_dtype=types.FLOAT)
+        self.transpose = ops.Transpose(device="gpu", perm=[3, 0, 1, 2])
+        self.uniform = ops.Uniform(range=(0.0, 1.0))
         self.flip = ops.Flip(device="gpu", horizontal=1, vertical=0)
-        self.normalize = ops.NormalizePermute(
-            device="gpu",
-            mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225],
-            width=224,
-            height=224
+        # self.normalize = ops.NormalizePermute(
+        #     device="gpu",
+        #     mean=[0.485, 0.456, 0.406],
+        #     std=[0.229, 0.224, 0.225],
+        #     width=224,
+        #     height=224
+        # )
+        self.cmn = ops.CropMirrorNormalize(
+             device="gpu",
+             output_dtype=types.FLOAT,
+        #     # output_layout=types.NCHW,
+             crop=(224, 224),
+             image_type=types.RGB,
+             mean=[0.485, 0.456, 0.406],
+             std=[0.229, 0.224, 0.225]
         )
 
     def define_graph(self):
-        output = self.reader(name='Reader')
-        output = self.crop(output)
-        output = self.flip(output)
-        # output = self.normalize(output)
-        return output
+        inputs = self.reader(name='Reader')
+        # output = self.flip(inputs)
+        cropped = self.crop(inputs, crop_pos_x=self.uniform(), crop_pos_y=self.uniform())
+        # output = self.transpose(cropped)
+        # flipped = self.flip(inputs)
+        output = self.cmn(inputs)
+        return cropped
 
 
 class DaliLoader():
@@ -76,7 +90,7 @@ class DaliLoader():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Testing the Dali Loader')
 
-    parser.add_argument('--batch-size', default=5, type=int, metavar='N', help='the batch size')
+    parser.add_argument('--batch-size', default=1, type=int, metavar='N', help='the batch size')
     parser.add_argument('--root-path', default='', type=str, metavar='PATH', help='file root', required=True)
     parser.add_argument('--sequence-length', default=1, type=int, metavar='N', help='the sequence length')
     parser.add_argument('--crop-size', default=224, type=int, metavar='N', help='the crop size')
@@ -97,4 +111,13 @@ if __name__ == '__main__':
 
     for i, inputs in enumerate(loader):
         inputs = inputs[0]["data"]
-        print(i, ' -- ', inputs.shape)
+        x = torch.squeeze(inputs).permute(2, 0, 1)
+        tr = transforms.Compose([
+                transforms.Normalize(
+                    mean=[0.485, 0.456, 0.406],
+                    std=[0.229, 0.224, 0.225]
+                )
+            ])
+        x = tr(x)
+
+        print(i, ' -- ', inputs.shape, x.shape)
