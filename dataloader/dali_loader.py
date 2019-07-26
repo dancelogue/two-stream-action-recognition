@@ -14,11 +14,11 @@ from nvidia.dali.plugin import pytorch
 
 
 class VideoReaderPipeline(Pipeline):
-    def __init__(self, batch_size, sequence_length, num_threads, device_id, files, crop_size, transforms=None):
+    def __init__(self, batch_size, sequence_length, num_threads, device_id, file_root, crop_size, transforms=None):
         super(VideoReaderPipeline, self).__init__(batch_size, num_threads, device_id, seed=12)
         self.reader = ops.VideoReader(
             device='gpu',
-            filenames=files,
+            file_root=file_root,
             sequence_length=sequence_length,
             normalized=False,
             random_shuffle=True,
@@ -49,25 +49,25 @@ class VideoReaderPipeline(Pipeline):
         )
 
     def define_graph(self):
-        inputs = self.reader(name='Reader')
+        inputs, labels = self.reader(name='Reader')
         # output = self.flip(inputs)
         cropped = self.crop(inputs, crop_pos_x=self.uniform(), crop_pos_y=self.uniform())
         # output = self.transpose(cropped)
         # flipped = self.flip(inputs)
-        output = self.cmn(inputs)
-        return cropped
+        # output = self.cmn(inputs)
+        return cropped, labels
 
 
 class DaliLoader():
     def __init__(self, batch_size, file_root, sequence_length, crop_size, transforms=None):
-        container_files = [file_root + '/' + f for f in os.listdir(file_root)]
+        # container_files = [file_root + '/' + f for f in os.listdir(file_root)]
 
         self.pipeline = VideoReaderPipeline(
             batch_size=batch_size,
             sequence_length=sequence_length,
             num_threads=2,
             device_id=0,
-            files=container_files,
+            file_root=file_root,
             crop_size=crop_size,
             transforms=transforms
         )
@@ -110,6 +110,7 @@ if __name__ == '__main__':
     )
 
     for i, inputs in enumerate(loader):
+        import ipdb; ipdb.set_trace()
         inputs = inputs[0]["data"]
         x = torch.squeeze(inputs).permute(2, 0, 1)
         tr = transforms.Compose([
