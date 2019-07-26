@@ -231,7 +231,6 @@ if __name__ == '__main__':
     train_loader, val_loader, test_video = dataloader.run()
     print(len(train_loader))
 
-    for i, item in enumerate(train_loader):
-        for img in item:
-            print(img['img1'].shape )
+    for i, (item, label) in enumerate(train_loader):
+        print(item['img0'].shape, label)
         # print(i, '--', item.shape)
