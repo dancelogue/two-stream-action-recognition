@@ -75,7 +75,7 @@ class DaliLoader():
         self.epoch_size = self.pipeline.epoch_size('Reader')
         self.dali_iterator = pytorch.DALIGenericIterator(
             self.pipeline,
-            ["data"],
+            ["data", "label"],
             self.epoch_size,
             auto_reset=True
         )
@@ -110,8 +110,9 @@ if __name__ == '__main__':
     )
 
     for i, inputs in enumerate(loader):
-        import ipdb; ipdb.set_trace()
         inputs = inputs[0]["data"]
+        inputs = inputs[0]["label"]
+
         x = torch.squeeze(inputs).permute(2, 0, 1)
         tr = transforms.Compose([
                 transforms.Normalize(
