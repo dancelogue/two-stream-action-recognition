@@ -110,16 +110,16 @@ if __name__ == '__main__':
     )
 
     for i, inputs in enumerate(loader):
-        inputs = inputs[0]["data"]
-        inputs = inputs[0]["label"]
+        data = inputs[0]["data"]
+        label = inputs[0]["label"]
 
-        x = torch.squeeze(inputs).permute(2, 0, 1)
+        x = torch.squeeze(data).permute(2, 0, 1)
         tr = transforms.Compose([
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406],
-                    std=[0.229, 0.224, 0.225]
-                )
-            ])
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
         x = tr(x)
 
-        print(i, ' -- ', inputs.shape, x.shape)
+        print(i, ' -- ', data.shape, x.shape, label)
