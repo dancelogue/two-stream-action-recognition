@@ -2,6 +2,8 @@
 import pickle
 from pathlib import Path
 import random
+import subprocess
+import os
 
 # App
 try:
@@ -18,6 +20,9 @@ from PIL import Image
 from skimage import io, color, exposure
 
 
+FNULL = open(os.devnull, 'w')
+
+
 class spatial_dataset(Dataset):
     def __init__(self, dic, root_dir, mode, transform=None):
 
@@ -26,11 +31,12 @@ class spatial_dataset(Dataset):
         self.root_dir = root_dir
         self.mode = mode
         self.transform = transform
+        self.cache_list = []
 
     def __len__(self):
         return len(self.keys)
 
-    def ucf_image_path(self, video_name, index):
+    def ucf_image_path(self, video_name, index, video_path=None):
         if video_name.split('_')[0] == 'HandstandPushups':
             n, g = video_name.split('_', 1)
             name = 'HandStandPushups_' + g
@@ -40,6 +46,9 @@ class spatial_dataset(Dataset):
 
         str_index = str(index) if index >= 100 else "0%s" % index if index >= 10 else "00%s" % index
         path = path + str_index + '.jpg'
+        
+        # if video_path and video_path.exists():
+            # print(video_path)
 
         if Path(path).exists():
             return path
@@ -62,49 +71,93 @@ class spatial_dataset(Dataset):
         transformed_img = self.transform(img)
         img.close()
 
+        # After reading data, do clean up to conserve space
+        # os.remove(path)
+
         return transformed_img
 
     def __getitem__(self, idx):
         keys_list = list(self.keys)
         values_list = list(self.values)
+        
+        value = values_list[idx]
+        label = int(value.get('label')) - 1
+        video_path = value.get('video_path')
+        video_name = value.get('video_name')
 
-        if self.mode == 'train':
+        if self.mode == 'train':            
             video_name, nb_clips = keys_list[idx].split(' ')
+
             nb_clips = int(nb_clips)
 
             clips = []
             nb_3 = int(nb_clips / 3)
             nb_2_3 = int(nb_clips * 2 / 3)
 
-            clips.append(random.randint(1, nb_3))
-            clips.append(random.randint(nb_3, nb_2_3))
-            clips.append(random.randint(nb_2_3, nb_clips + 1))
+            index_1 = random.randint(1, nb_3)
+            index_2 = random.randint(nb_3, nb_2_3)
+            index_3 = random.randint(nb_2_3, nb_clips + 1)
+
+            # clips.append(index_1)
+            # clips.append(index_2)
+            # clips.append(index_3)
+
+            frame_path = '/two-stream-action-recognition/datasets/temp/train-{video_name}-frame-{i1}-{i2}-{i3}_%d.jpg'.format(video_name=video_name, i1=index_1, i2=index_2, i3=index_3)
+            sub_p = subprocess.call([
+                'ffmpeg',
+                '-i',
+                str(video_path),
+                '-vf',
+                "select='eq(n\,{i1})+eq(n\,{i2})+eq(n\,{i3})'".format(i1=index_1, i2=index_2, i3=index_3),
+                '-vsync',
+                '0',
+                frame_path
+                ],
+                stdout=FNULL,
+                stderr=subprocess.STDOUT
+            )
+
+            [clips.append(frame_path % (i + 1)) for i in range(3)]
 
         elif self.mode == 'val':
             video_name, index = keys_list[idx].split(' ')
             index = abs(int(index))
         else:
             raise ValueError('There are only train and val mode')
-
-        label = values_list[idx]
-        label = int(label) - 1
-
+    
         if self.mode == 'train':
             data = {}
             for i in range(len(clips)):
                 key = 'img' + str(i)
-                index = clips[i]
-                path = self.ucf_image_path(video_name, index)
-                if not path:
-                    continue
+                path = clips[i]
+                # path = self.ucf_image_path(video_name, index, video_path=video_path)
+                # if not path:
+                #     continue
 
                 data[key] = self.load_ucf_image(path)
 
             sample = (data, label)
 
         elif self.mode == 'val':
-            path = self.ucf_image_path(video_name, index)
-            data = self.load_ucf_image(path)
+            # path = self.ucf_image_path(video_name, index)
+            frame_path_val = '/two-stream-action-recognition/datasets/temp/val-{video_name}-frame-{index}_%d.jpg'.format(video_name=video_name, index=index)
+
+            subprocess.call([
+                'ffmpeg',
+                '-i',
+                str(video_path),
+                '-vf',
+                "select='eq(n\,{index})'".format(index=index),
+                '-vsync',
+                '0',
+                frame_path_val
+                ],
+                stdout=FNULL,
+                stderr=subprocess.STDOUT
+            )
+
+            
+            data = self.load_ucf_image(frame_path_val % 1)
             sample = (video_name, data, label)
         else:
             raise ValueError('There are only train and val mode')
@@ -129,7 +182,7 @@ class spatial_dataloader():
         self.train_video, self.test_video = splitter.split_video()
 
     def load_frame_count(self):
-        with open('dataloader/dic/frame_count.pickle', 'rb') as file:
+        with open('/two-stream-action-recognition/dataloader/dic/frame_count.pickle', 'rb') as file:
             dic_frame = pickle.load(file)
         file.close()
 

@@ -54,10 +54,24 @@ class UCF101_splitter():
             key = video.split('_', 1)[1].split('.', 1)[0]
 
             label = self.action_label[line.split('/')[0]]
-            path = Path(self.dataset_path) / "v_{}".format(key)
 
-            if path.exists():
-                dic[key] = int(label)
+            if 'handstandpushups' in video.lower():
+                folder_name = 'HandstandPushups'
+                video_name = 'HandStandPushups_{}'.format("_".join(key.split('_')[1:]))
+            else:
+                folder_name = key.split('_')[0]
+                video_name = key
+
+            video_path = Path('/two-stream-action-recognition/datasets/UCF101-MP4') / folder_name / "v_{}.mp4".format(video_name)
+
+            if not video_path.exists():
+                print('VIDEO DOES NOT EXIST: ', video_path)
+                continue
+
+            dic[key] = {
+                'label': int(label),
+                'video_path': str(video_path),
+            }
         return dic
 
     def name_HandstandPushups(self, dic):

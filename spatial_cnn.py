@@ -7,6 +7,7 @@ from tqdm import tqdm
 import shutil
 from random import randint
 import argparse
+import glob
 
 import torchvision.transforms as transforms
 import torchvision.models as models
@@ -140,6 +141,10 @@ class Spatial_CNN():
                     pickle.dump(self.dic_video_level_preds, f)
                 f.close()
 
+            # Remove all files at the end of an epoch to save space
+            for f in glob.glob('/two-stream-action-recognition/datasets/temp/*'):
+                os.remove(f)
+
             save_checkpoint(
                 {
                     'epoch': self.epoch,
@@ -198,6 +203,8 @@ class Spatial_CNN():
 
             # measure elapsed time
             batch_time.update(time.time() - end)
+
+            print('iteration took: ', time.time() - end)
             end = time.time()
 
         info = {'Epoch':[self.epoch],

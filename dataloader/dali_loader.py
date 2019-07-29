@@ -51,11 +51,11 @@ class VideoReaderPipeline(Pipeline):
     def define_graph(self):
         inputs, labels = self.reader(name='Reader')
         # output = self.flip(inputs)
-        cropped = self.crop(inputs, crop_pos_x=self.uniform(), crop_pos_y=self.uniform())
-        # output = self.transpose(cropped)
+        # output = self.crop(inputs, crop_pos_x=self.uniform(), crop_pos_y=self.uniform())
+        output = self.transpose(inputs)
         # flipped = self.flip(inputs)
         # output = self.cmn(inputs)
-        return cropped, labels
+        return output, labels
 
 
 class DaliLoader():
