@@ -141,10 +141,6 @@ class Spatial_CNN():
                     pickle.dump(self.dic_video_level_preds, f)
                 f.close()
 
-            # Remove all files at the end of an epoch to save space
-            for f in glob.glob('/two-stream-action-recognition/datasets/temp/*'):
-                os.remove(f)
-
             save_checkpoint(
                 {
                     'epoch': self.epoch,
@@ -156,6 +152,10 @@ class Spatial_CNN():
                 'record/spatial/checkpoint.pth.tar',
                 'record/spatial/model_best.pth.tar'
             )
+
+            # Remove all files at the end of an epoch to save space
+            for f in glob.glob('/two-stream-action-recognition/datasets/cache_images/*'):
+                os.remove(f)
 
     def train_1epoch(self):
         print('==> Epoch:[{0}/{1}][training stage]'.format(self.epoch, self.nb_epochs))
@@ -204,7 +204,7 @@ class Spatial_CNN():
             # measure elapsed time
             batch_time.update(time.time() - end)
 
-            print('iteration took: ', time.time() - end)
+            # print('train iteration took: ', time.time() - end)
             end = time.time()
 
         info = {'Epoch':[self.epoch],
@@ -238,6 +238,8 @@ class Spatial_CNN():
             output = self.model(data_var)
             # measure elapsed time
             batch_time.update(time.time() - end)
+
+            # print('validation iteration took: ', time.time() - end)
             end = time.time()
             #Calculate video level prediction
             preds = output.data.cpu().numpy()
@@ -251,7 +253,7 @@ class Spatial_CNN():
 
         video_top1, video_top5, video_loss = self.frame2_video_level_accuracy()
 
-        print(video_loss)
+        # print(video_loss)
         info = {'Epoch':[self.epoch],
                 'Batch Time':[round(batch_time.avg,3)],
                 # 'Loss':[round(video_loss,5)],
@@ -269,7 +271,7 @@ class Spatial_CNN():
         for name in sorted(self.dic_video_level_preds.keys()):
 
             preds = self.dic_video_level_preds[name]
-            label = int(self.test_video[name])-1
+            label = int(self.test_video[name].get('label')) - 1
 
             video_level_preds[ii,:] = preds
             video_level_labels[ii] = label

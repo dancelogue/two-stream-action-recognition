@@ -4,6 +4,7 @@ from pathlib import Path
 import random
 import subprocess
 import os
+import time
 
 # App
 try:
@@ -32,6 +33,8 @@ class spatial_dataset(Dataset):
         self.mode = mode
         self.transform = transform
         self.cache_list = []
+        self.train_read_count = 0
+        self.train_read_average = 0
 
     def __len__(self):
         return len(self.keys)
@@ -95,15 +98,17 @@ class spatial_dataset(Dataset):
             nb_2_3 = int(nb_clips * 2 / 3)
 
             index_1 = random.randint(1, nb_3)
-            index_2 = random.randint(nb_3, nb_2_3)
-            index_3 = random.randint(nb_2_3, nb_clips + 1)
+            index_2 = random.randint(nb_3 + 1, nb_2_3) # preventing overlap as randint is inclusive
+            index_3 = random.randint(nb_2_3 + 1, nb_clips + 1)
 
             # clips.append(index_1)
             # clips.append(index_2)
             # clips.append(index_3)
 
-            frame_path = '/two-stream-action-recognition/datasets/temp/train-{video_name}-frame-{i1}-{i2}-{i3}_%d.jpg'.format(video_name=video_name, i1=index_1, i2=index_2, i3=index_3)
-            sub_p = subprocess.call([
+            frame_path = '/two-stream-action-recognition/datasets/cache_images/train-{video_name}-frame-{i1}-{i2}-{i3}_%d.jpg'.format(video_name=video_name, i1=index_1, i2=index_2, i3=index_3)
+            start = time.time() 
+
+            sub_p = subprocess.check_output([
                 'ffmpeg',
                 '-i',
                 str(video_path),
@@ -113,9 +118,18 @@ class spatial_dataset(Dataset):
                 '0',
                 frame_path
                 ],
-                stdout=FNULL,
-                stderr=subprocess.STDOUT
+                # stdout=FNULL,
+                stderr=subprocess.DEVNULL
             )
+
+            elapsed = time.time() - start
+
+            # if not self.train_read_average:
+            #     self.train_read_average = elapsed
+            # else:
+            #     self.train_read_average = (self.train_read_average + elapsed) / 2
+
+            # print('Training Generate frames from ffmpeg took: {}'.format(self.train_read_average))
 
             [clips.append(frame_path % (i + 1)) for i in range(3)]
 
@@ -140,9 +154,10 @@ class spatial_dataset(Dataset):
 
         elif self.mode == 'val':
             # path = self.ucf_image_path(video_name, index)
-            frame_path_val = '/two-stream-action-recognition/datasets/temp/val-{video_name}-frame-{index}_%d.jpg'.format(video_name=video_name, index=index)
-
-            subprocess.call([
+            frame_path_val = '/two-stream-action-recognition/datasets/cache_images/val-{video_name}-frame-{index}_%d.jpg'.format(video_name=video_name, index=index)
+            
+            start = time.time()
+            subprocess.check_output([
                 'ffmpeg',
                 '-i',
                 str(video_path),
@@ -152,9 +167,11 @@ class spatial_dataset(Dataset):
                 '0',
                 frame_path_val
                 ],
-                stdout=FNULL,
-                stderr=subprocess.STDOUT
+                # stdout=FNULL,
+                stderr=subprocess.DEVNULL
             )
+
+            # print('Validation Generate frames from ffmpeg took: {}'.format(time.time() - start))
 
             
             data = self.load_ucf_image(frame_path_val % 1)

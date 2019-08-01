@@ -62,7 +62,7 @@ class UCF101_splitter():
                 folder_name = key.split('_')[0]
                 video_name = key
 
-            video_path = Path('/two-stream-action-recognition/datasets/UCF101-MP4') / folder_name / "v_{}.mp4".format(video_name)
+            video_path = Path(self.dataset_path) / folder_name / "v_{}.avi".format(video_name)
 
             if not video_path.exists():
                 print('VIDEO DOES NOT EXIST: ', video_path)
